@@ -1,132 +1,130 @@
-# Riot Toxicity Detector
+# Toxicity Detector
 
-_A Riot-themed interactive web app that detects toxic messages using machine learning and provides real-time moderation insights._
+Interactive Streamlit app for toxic comment detection with:
+- a baseline `TF-IDF + Logistic Regression` model
+- optional local/Hugging Face `unitary/toxic-bert` inference
+- token-level contribution explanations
+- batch CSV scoring with moderation actions
 
----
+## Overview
 
-## 📌 Table of Contents
-- <a href="#Overview">Overview</a>
-- <a href="#features">Features</a>
-- <a href="#dataset">Dataset</a>
-- <a href="#tools--technologies">Tools & Technologies</a>
-- <a href="#project-structure">Project Structure</a>
-- <a href="#data-cleaning--preparation">Data Cleaning & Preparation</a>
-- <a href="#dashboard">Dashboard</a>
-- <a href="#how-to-run-this-project">How to Run This Project</a>
-- <a href="#author--contact">Author & Contact</a>
+This project trains and serves a binary toxicity detector using the Jigsaw Toxic Comment dataset.
 
----
-<h2><a class="anchor" id="overview"></a>Overview</h2>
+The app supports:
+- **Single-text inference** with probability and label
+- **Action recommendation** (`AUTO-HIDE`, `FLAG FOR REVIEW`, `NO ACTION`)
+- **Token attribution**:
+  - TF-IDF coefficient-based explanation for baseline model
+  - Integrated-gradients style attribution for BERT mode
+- **Batch predictions** from uploaded CSV files containing `comment_text`
 
-The Riot Toxicity Detector is a machine-learning powered tool inspired by Riot Games approach to preventing disruptive behavior.
-The app analyzes chat messages and predicts toxicity using a Logistic Regression classifier trained on the Jigsaw Toxic Comment dataset.
+## Features
 
-It provides:
--  Real-time toxicity detection
--  Token-level explanation
-- Action recommendations (Auto-hide, Review, No action)
-- A fully themed Riot-style UI built with Streamlit
+- Real-time toxicity scoring in Streamlit
+- Selectable inference model:
+  - `TF-IDF Baseline` (default)
+  - `BERT (unitary/toxic-bert)` when available
+  - optional embeddings model if `models/embeddings_clf.joblib` exists
+- Adjustable moderation threshold slider
+- Downloadable batch prediction output CSV
+- Automatic baseline training in app startup **if model files are missing** and training data is available
 
----
-<h2><a class="anchor" id="features"></a>Features</h2>
+## Dataset
 
-- ⚡ Real-time toxicity predictions using TF–IDF + Logistic Regression
+- **Source:** Jigsaw Toxic Comment Classification Challenge (Kaggle)
+- **Raw input expected at:** `data/raw/train.csv`
 
-- 🔍 Token contribution analysis (which words trigger toxicity)
+The preprocessing step builds:
+- cleaned text (`comment_clean`)
+- metadata (`char_len`, `word_count`)
+- binary target (`target` = any toxicity label > 0)
+- output parquet at `data/processed/train_clean.parquet`
 
-- 🎨 Custom Riot-themed UI with background art & animated styles
+## Tech Stack
 
-- 📤 Batch prediction mode (upload CSV → get toxicity scores instantly)
+- Python
+- Streamlit
+- pandas, numpy
+- scikit-learn
+- joblib
+- tqdm
+- transformers, torch (for BERT mode)
 
-- 📊 Toxicity probability + recommended moderation action
+## Project Structure
 
-- 🧠 Expandable for advanced models (BERT, sentence transformers, etc.)
-
----
-<h2><a class="anchor" id="dataset"></a>Dataset</h2>
-
-- Jigsaw Toxic Comment Classification Challenge dataset from Kaggle
-
----
-<h2><a class="anchor" id="tools--technologies"></a>Tools & Technologies</h2>
-
-- Python, Scikit-learn, NumPy, Pandas, Joblib, Tqdm
-- Streamlit (Interactive Visualizations), Custom CSS(Riot-Themed)
-- GitHub
-
----
-<h2><a class="anchor" id="project-structure"></a>Project Structure</h2>
-
-```
-toxicity_detector/
-│
-├── assets/
-│   ├── riot_logo.png
-│   ├── splash.jpg
-│
-├── data/
-│   ├── raw/
-│   │   ├── train.csv
-│   ├── processed/
-│       ├── train_clean.parquet
-│
-├── models/
-│   ├── tfidf.joblib
-│   ├── baseline_lr.joblib
-│   ├── val_preds.csv
-│
+```text
+Classifier/
+├── streamlit_toxicity_app.py
+├── requirements.txt
+├── Readme.md
 ├── src/
 │   ├── data_prep.py
 │   ├── train_baseline.py
-│   ├── streamlit_toxicity_app.py
-│
-└── README.md
+│   └── quickmanualinterferencetest.py
+├── models/
+│   ├── tfidf.joblib
+│   ├── baseline_lr.joblib
+│   ├── baseline_nb.joblib
+│   ├── baseline_svm.joblib
+│   ├── val_preds.csv
+│   └── toxic-bert/
+│       ├── config.json
+│       ├── model.safetensors
+│       ├── tokenizer.json
+│       └── tokenizer_config.json
+└── data/
+    ├── raw/
+    │   └── train.csv
+    └── processed/
+        └── train_clean.parquet
 ```
 
----
-<h2><a class="anchor" id="data-cleaning--preparation"></a>Data Cleaning & Preparation</h2>
+## Setup and Run
 
-- The data cleaning pipeline includes:
-- Unicode normalization
-- URL, email, and username anonymization
-- Lowercasing
-- Removing special characters
-- Collapsing extra whitespace
-- Creating a binary toxicity label
-- Saving optimized Parquet format for fast loading
+### 1) Install dependencies
 
----
-<h2><a class="anchor" id="dashboard"></a>Dashboard</h2>
-
-
-![App Screenshot](assets/app_screenshot.png)
-
-
----
-<h2><a class="anchor" id="how-to-run-this-project"></a>How to Run This Project</h2>
-
-1. Install Dependencies:
-```nginx
+```bash
 pip install -r requirements.txt
 ```
-2. Prepare Data:
+
+### 2) Prepare data
+
 ```bash
-python src/data_prep.py
+python src/data_prep.py 
 ```
-3. Train the Model:
+
+### 3) Train baseline model
+
 ```bash
-python src/train_baseline.py
+python src/train_baseline.py 
 ```
-4. Open Terminal and run:
-```arduino
+
+This saves:
+- `models/tfidf.joblib`
+- `models/baseline_lr.joblib`
+- `models/val_preds.csv`
+
+### 4) Start the app
+
+```bash
 python -m streamlit run streamlit_toxicity_app.py
 ```
 
+## Batch Prediction Format
 
----
-<h2><a class="anchor" id="author--contact"></a>Author & Contact</h2>
+Upload a CSV containing:
+- `comment_text`
 
-**Bhavya Patela** <br>
-💼 Data Analyst <br>
-📧 Email: bhavyapatela100@gmail.com <br>
-🔗 [LinkedIn](https://www.linkedin.com/in/bhavya-patela-526a38322/)
+The app adds:
+- `toxicity_proba`
+- `action` (`AUTO-HIDE` / `REVIEW` / `NO_ACTION`)
+
+## Notes
+
+- If baseline artifacts are missing, the app tries to run `src/train_baseline.py` automatically.
+- Automatic training requires processed data at `data/processed/train_clean.parquet`.
+- BERT mode loads from:
+  1. local folder `models/toxic-bert` (preferred), or
+  2. Hugging Face model `unitary/toxic-bert`
+- This is a demo/portfolio project. Do not use as a fully automated moderation system without human review.
+
