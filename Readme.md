@@ -29,6 +29,12 @@ The app supports:
 - Downloadable batch prediction output CSV
 - Automatic baseline training in app startup **if model files are missing** and training data is available
 
+## Visuals
+
+![Front page view](assets/ss_front_page.png)
+![Toxicity detection page ](assets/ss_detection.png)
+![Custom CSV based model training](assets/custom_training.png)
+
 ## Dataset
 
 - **Source:** Jigsaw Toxic Comment Classification Challenge (Kaggle)
