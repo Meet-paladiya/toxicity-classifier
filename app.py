@@ -20,5 +20,10 @@ except Exception:
         subprocess.run(cmd, check=True)
 
 
+# Expose a module-level callable named `app` for platform detection.
+# Many hosts look for a callable/variable named `app` in app.py.
+app = start
+
+
 if __name__ == "__main__":
     start()
