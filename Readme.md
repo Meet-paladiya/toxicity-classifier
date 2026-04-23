@@ -31,8 +31,13 @@ The app supports:
 
 ## Visuals
 
-![Front page view](assets/ss_front_page.png)
-![Toxicity detection page ](assets/ss_detection.png)
+- Front page view
+![](assets/ss_front_page.png)
+
+- Toxicity detection page
+![](assets/ss_detection.png)
+
+- Custom CSV based model training
 ![Custom CSV based model training](assets/custom_training.png)
 
 ## Dataset

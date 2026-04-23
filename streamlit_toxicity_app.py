@@ -245,7 +245,16 @@ def _load_bert_cached():
     load_kwargs = {}
 
     # Prefer local model files first so app works offline/reliably.
-    if BERT_LOCAL_DIR.exists():
+    # Only force local_files_only if the local dir actually contains a model file
+    # (model.safetensors or pytorch_model.bin). If the directory exists but is
+    # incomplete, fall back to the Hugging Face Hub so transformers can download it.
+    model_filenames = ["model.safetensors", "pytorch_model.bin"]
+    try:
+        local_has_model = any((BERT_LOCAL_DIR / fn).exists() for fn in model_filenames)
+    except Exception:
+        local_has_model = False
+
+    if BERT_LOCAL_DIR.exists() and local_has_model:
         source = str(BERT_LOCAL_DIR)
         load_kwargs["local_files_only"] = True
 
